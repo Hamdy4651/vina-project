@@ -1,0 +1,108 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  --font-display: 'Inter Tight', sans-serif;
+  --font-sans: 'Inter', sans-serif;
+}
+
+:root {
+  --black:      #0C0908;
+  --dark:       #171311;
+  --dark2:      #1F1A18;
+  --bordeaux:   #6B1108;
+  --bord-light: #8B1A0E;
+  --bord-glow:  rgba(107,17,8,0.35);
+  --cream:      #F4F0EA;
+  --off-white:  #FAF8F5;
+  --muted:      rgba(244,240,234,0.4);
+  --muted2:     rgba(244,240,234,0.2);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--black);
+  color: var(--cream);
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+::selection { background: var(--bordeaux); color: var(--off-white); }
+
+::-webkit-scrollbar { width: 2px; }
+::-webkit-scrollbar-track { background: var(--dark); }
+::-webkit-scrollbar-thumb { background: var(--bordeaux); }
+
+/* ── Faceted clip ─── */
+.clip-facet {
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
+}
+.clip-facet-sm {
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+}
+
+/* ── Keyframes ─── */
+@keyframes fade-in   { from { opacity: 0; } to { opacity: 1; } }
+@keyframes line-up   { from { transform: translateY(105%); } to { transform: translateY(0); } }
+@keyframes scale-in  { from { transform: scale(1.06); } to { transform: scale(1); } }
+@keyframes line-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes slide-up  { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slide-right { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes marquee   { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes count-up  { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes float     { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+
+/* ── Text mask reveal ─── */
+.line-mask { overflow: hidden; display: block; }
+.line-mask span { display: block; }
+
+/* ── Bordeaux line growing ─── */
+.bord-line {
+  display: block;
+  height: 1px;
+  background: var(--bordeaux);
+  transform-origin: left;
+  transform: scaleX(0);
+  transition: transform 0.6s var(--ease);
+}
+.bord-line.grown { transform: scaleX(1); }
+
+/* ── Service row hover ─── */
+.service-row { border-bottom: 1px solid rgba(244,240,234,0.08); }
+.service-row:hover .svc-num { color: var(--bord-light); }
+.service-row:hover .bord-line { transform: scaleX(1); }
+.service-row:hover .svc-img { opacity: 1; transform: scale(1) translateY(0); }
+.service-row:hover .svc-desc { opacity: 1; transform: translateY(0); }
+
+/* ── Progress rail ─── */
+.progress-rail { position: fixed; right: 28px; top: 50%; transform: translateY(-50%); z-index: 40; display: flex; flex-direction: column; gap: 20px; align-items: flex-end; }
+.rail-item { display: flex; align-items: center; gap: 8px; cursor: pointer; opacity: 0.35; transition: opacity 0.3s; }
+.rail-item.active { opacity: 1; }
+.rail-item .rail-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--cream); transition: all 0.3s; }
+.rail-item.active .rail-dot { background: var(--bordeaux); width: 4px; height: 20px; border-radius: 2px; }
+.rail-label { font-family: 'Inter Tight', sans-serif; font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--muted); }
+
+/* ── Diagonal section ─── */
+.section-angled {
+  clip-path: polygon(0 48px, 100% 0, 100% calc(100% - 48px), 0 100%);
+  margin: -48px 0;
+  padding: 112px 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .progress-rail { display: none; }
+}
