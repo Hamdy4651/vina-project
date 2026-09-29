@@ -1246,11 +1246,22 @@ const VIZ_OPTIONS = [
   { id: 'custom', label: 'Individuell', n: -1 },
 ]
 
+const UMSETZUNG_LEVELS = {
+  Basic: { rate: 1000, label: 'Basic / Einfach', desc: 'Einfache Ausstattung und Materialien.' },
+  Standard: { rate: 1500, label: 'Standard', desc: 'Gehobene Standardausstattung.' },
+  Hochwertig: { rate: 2200, label: 'Hochwertig', desc: 'Hochwertige Materialien und Ausstattung.' },
+} as const
+type UmsetzungLevel = keyof typeof UMSETZUNG_LEVELS
+
 function CostCalculator() {
   const [area, setArea] = useState(150)
   const [planLevel, setPlanLevel] = useState<PlanLevel>('Basic')
   const [viz, setViz] = useState('none')
   const [customN, setCustomN] = useState(4)
+  const [mode, setMode] = useState<'planung' | 'umsetzung'>('planung')
+  const [uLevel, setULevel] = useState<UmsetzungLevel>('Standard')
+  const [uResult, setUResult] = useState<{ total: number; level: UmsetzungLevel; area: number } | null>(null)
+  const calculateUmsetzung = () => setUResult({ total: UMSETZUNG_LEVELS[uLevel].rate * area, level: uLevel, area })
   const [empty, setEmpty] = useState(false)
   const [result, setResult] = useState<{ plan: number; viz: number; n: number; total: number; level: PlanLevel; area: number } | null>(null)
 
@@ -1286,6 +1297,20 @@ function CostCalculator() {
           </h2>
         </Reveal>
 
+        <Reveal style={{ marginBottom: 48 }}>
+          <div style={{ display: 'inline-flex', gap: 2, padding: 4, background: 'rgba(244,240,234,0.03)', border: '1px solid rgba(244,240,234,0.08)', flexWrap: 'wrap' }}>
+            {([['planung', '2D Planung & 3D Visualisierung'], ['umsetzung', 'Umsetzung']] as const).map(([m, label]) => (
+              <button key={m} onClick={() => setMode(m)} style={{
+                padding: '12px 24px', border: 'none', cursor: 'pointer',
+                fontFamily: 'Inter Tight, sans-serif', fontSize: 12, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase',
+                background: mode === m ? 'var(--bordeaux)' : 'transparent',
+                color: mode === m ? 'var(--off-white)' : 'rgba(244,240,234,0.45)', transition: 'all 0.3s',
+              }}>{label}</button>
+            ))}
+          </div>
+        </Reveal>
+
+        {mode === 'planung' ? (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'start' }} className="grid-cols-1 lg:grid-cols-2">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
             <div>
@@ -1394,6 +1419,69 @@ function CostCalculator() {
             )}
           </div>
         </div>
+        ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'start' }} className="grid-cols-1 lg:grid-cols-2">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+            <div>
+              <label style={LABEL}>FLÄCHE IN M²</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                <input type="range" min={20} max={1000} step={5} value={area} onChange={e => setArea(+e.target.value)} style={{ flex: 1, accentColor: 'var(--bordeaux)' }} />
+                <span style={{ fontFamily: 'Inter Tight, sans-serif', fontSize: 22, fontWeight: 700, color: 'var(--cream)', minWidth: 80 }}>{area} m²</span>
+              </div>
+            </div>
+
+            <div>
+              <label style={LABEL}>AUSFÜHRUNG</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {(Object.keys(UMSETZUNG_LEVELS) as UmsetzungLevel[]).map(lv => {
+                  const u = UMSETZUNG_LEVELS[lv]; const on = uLevel === lv
+                  return (
+                    <button key={lv} onClick={() => setULevel(lv)} style={{
+                      textAlign: 'left', padding: '16px 20px', cursor: 'pointer',
+                      border: `1px solid ${on ? 'var(--bordeaux)' : 'rgba(244,240,234,0.1)'}`,
+                      background: on ? 'rgba(107,17,8,0.12)' : 'rgba(244,240,234,0.02)', transition: 'all 0.25s',
+                    }}>
+                      <span style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'Inter Tight, sans-serif', fontSize: 13, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: on ? 'var(--off-white)' : 'rgba(244,240,234,0.6)', marginBottom: 4 }}>
+                        <span>{u.label}</span><span>{fmt(u.rate)} €/m²</span>
+                      </span>
+                      <span style={{ fontFamily: 'Inter, sans-serif', fontSize: 13, color: 'rgba(244,240,234,0.45)', lineHeight: 1.6 }}>{u.desc}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            <button onClick={calculateUmsetzung} className="clip-facet-sm" style={{
+              padding: '18px', background: 'var(--bordeaux)', color: 'var(--off-white)', border: 'none', cursor: 'pointer',
+              fontFamily: 'Inter Tight, sans-serif', fontSize: 12, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase',
+            }}>KOSTEN BERECHNEN →</button>
+          </div>
+
+          <div style={{ padding: '64px 48px', background: 'rgba(244,240,234,0.02)', border: '1px solid rgba(244,240,234,0.06)', minHeight: 300, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            {uResult ? (
+              <>
+                <p style={{ fontFamily: 'Inter Tight, sans-serif', fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', color: 'rgba(244,240,234,0.4)', marginBottom: 24 }}>UNVERBINDLICHER RICHTWERT — UMSETZUNG</p>
+                <p style={{ fontFamily: 'Inter Tight, sans-serif', fontWeight: 800, fontSize: 'clamp(1.5rem, 4vw, 3.5rem)', letterSpacing: '-0.04em', color: 'var(--off-white)', lineHeight: 1, marginBottom: 28 }}>
+                  CA. {fmt(uResult.total)} €
+                </p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, marginBottom: 28, fontFamily: 'Inter, sans-serif', fontSize: 14, color: 'rgba(244,240,234,0.6)' }}>
+                  <span>Umsetzung {UMSETZUNG_LEVELS[uResult.level].label} ({uResult.area} m² × {fmt(UMSETZUNG_LEVELS[uResult.level].rate)} €)</span>
+                  <span>{fmt(uResult.total)} €</span>
+                </div>
+                <p style={{ fontFamily: 'Inter, sans-serif', fontWeight: 300, fontSize: 13, color: 'rgba(244,240,234,0.4)', lineHeight: 1.7, marginBottom: 32 }}>
+                  Alle Angaben ohne Gewähr — für ein genaues Angebot kontaktieren Sie uns.
+                </p>
+                <button onClick={() => document.getElementById('kontakt')?.scrollIntoView({ behavior: 'smooth' })} style={{
+                  display: 'flex', alignItems: 'center', gap: 12, background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                  fontFamily: 'Inter Tight, sans-serif', fontSize: 12, fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--bordeaux)',
+                }}>ANGEBOT ANFRAGEN <span>→</span></button>
+              </>
+            ) : (
+              <p style={{ fontFamily: 'Inter Tight, sans-serif', fontWeight: 300, fontSize: 18, color: 'rgba(244,240,234,0.2)' }}>Ihre Schätzung erscheint hier nach der Berechnung.</p>
+            )}
+          </div>
+        </div>
+        )}
       </div>
     </section>
   )
